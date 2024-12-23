@@ -83,84 +83,145 @@
             color: #dcdcdc;
             font-style: italic;
         }
-
-        #output {
-            text-align: left;
-            font-size: 14px;
-            color: #ffebcd;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>TTT Generator</h1>
+        <h1>TTT GENARATOR</h1>
+
+        <!-- Password Step -->
+        <div class="step active" id="password-step">
+            <label for="password">Enter Password:</label>
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="checkPassword()">Submit</button>
+        </div>
 
         <!-- Step 1 -->
-        <div class="step active" id="step-1">
-            <label for="start_time">Enter Start Time (HH:MM):</label>
-            <input type="time" id="start_time">
-            <button onclick="generateSignals()">Generate Signals</button>
+        <div class="step" id="step-1">
+            <label for="assets">Enter Asset Names (e.g., USDBRL-OTC, USDINR-OTC, USDARS-OTC):</label>
+            <input type="text" id="assets" placeholder="Asset Names (comma separated)">
+            <button onclick="nextStep(1)">Next</button>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step" id="step-2">
+            <label for="direction">Enter Trade Direction (CALL/PUT):</label>
+            <input type="text" id="direction" placeholder="CALL/PUT">
+            <button onclick="nextStep(2)">Next</button>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step" id="step-3">
+            <label for="startTime">Enter Start Time (HH:MM):</label>
+            <input type="time" id="startTime">
+            <button onclick="nextStep(3)">Next</button>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step" id="step-4">
+            <label for="endTime">Enter End Time (HH:MM):</label>
+            <input type="time" id="endTime">
+            <button onclick="generate()">Generate Signals</button>
         </div>
 
         <!-- Output -->
         <div class="step" id="output">
             <h3>Generated Signals</h3>
-            <div id="signalsOutput"></div>
+            <div id="signalsOutput" style="text-align: left; font-size: 14px; color: #ffebcd;"></div>
             <button onclick="restart()">Restart</button>
         </div>
     </div>
 
     <script>
-        async function generateSignals() {
-            const start_time = document.getElementById("start_time").value;
-            const end_time = document.getElementById("end_time")?.value;  // Optional, but can be used later if needed
+        let step = 1;
+        const correctPassword = "@Triple_T_Trader";
 
-            if (!start_time) {
-                alert("Start time is required!");
-                return;
-            }
-
-            const proxyUrl = "https://cors-anywhere.herokuapp.com/";
-            const apiUrl = "https://alltradingapi.com/signal_list_gen/qx_signal.js";
-            const url = `${proxyUrl}${apiUrl}`;
-            const params = new URLSearchParams({
-                start_time,
-                end_time: end_time || "18:00",  // Default end time if not provided
-                days: 3,
-                pairs: "BRLUSD_otc,USDPKR_otc,USDINR_otc",
-                mode: "normal",
-                min_percentage: 50,
-                filter: 1,
-                separate: 1
-            });
-
-            try {
-                const response = await fetch(`${url}?${params}`);
-                const data = await response.json();
-                console.log('API Response:', data);  // Log the entire response for debugging
-
-                if (data && data.signals && Array.isArray(data.signals) && data.signals.length > 0) {
-                    displaySignals(data.signals);
-                } else {
-                    document.getElementById("output").innerHTML = `<p>No signals generated.</p>`;
-                }
-            } catch (error) {
-                console.error("Error fetching signals:", error.message);
-                document.getElementById("output").innerHTML = `<p style="color: red;">${error.message}</p>`;
+        function checkPassword() {
+            const password = document.getElementById("password").value.trim();
+            if (password === correctPassword) {
+                document.getElementById("password-step").classList.remove("active");
+                document.getElementById("step-1").classList.add("active");
+            } else {
+                alert("Incorrect password. Please try again.");
             }
         }
 
-        function displaySignals(signals) {
-            const output = document.getElementById("signalsOutput");
-            output.innerHTML = "";
+        function nextStep(currentStep) {
+            const current = document.getElementById(`step-${currentStep}`);
+            const next = document.getElementById(`step-${currentStep + 1}`);
 
-            signals.forEach(signal => {
-                // Assuming each signal has time, pair, and direction fields
-                const signalText = `${signal.time} - ${signal.pair} - ${signal.direction}`;
-                output.innerHTML += `<p>${signalText}</p>`;
-            });
+            if (!validateInput(currentStep)) return;
 
-            document.getElementById("step-1").classList.remove("active");
+            current.classList.remove("active");
+            next.classList.add("active");
+        }
+
+        function validateInput(step) {
+            if (step === 1) {
+                const assets = document.getElementById("assets").value.trim();
+                const assetArray = assets.split(',').map(asset => asset.trim());
+                if (assetArray.length !== 3 || assetArray.some(asset => !/^[A-Z]{3}[A-Z0-9-]{3,}-OTC$/.test(asset))) {
+                    alert("Enter exactly three valid asset names (e.g., USDBRL-OTC, USDINR-OTC, USDARS-OTC).");
+                    return false;
+                }
+            } else if (step === 2) {
+                const direction = document.getElementById("direction").value.trim().toUpperCase();
+                if (direction !== "CALL" && direction !== "PUT") {
+                    alert("Enter CALL or PUT as direction.");
+                    return false;
+                }
+            } else if (step === 3) {
+                if (!document.getElementById("startTime").value) {
+                    alert("Enter a valid start time.");
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function generate() {
+            const assets = document.getElementById("assets").value.trim().split(',').map(asset => asset.trim());
+            const direction = document.getElementById("direction").value.trim().toUpperCase();
+            const startTime = new Date("1970-01-01T" + document.getElementById("startTime").value + "Z");
+            const endTime = new Date("1970-01-01T" + document.getElementById("endTime").value + "Z");
+
+            if (!document.getElementById("endTime").value || startTime >= endTime) {
+                alert("Enter a valid end time that is later than start time.");
+                return;
+            }
+
+            const signalsOutput = document.getElementById("signalsOutput");
+
+            // Get the current date in UTC+06:00 timezone
+            const now = new Date();
+            const utcOffset = 6 * 60; // UTC+06:00
+            now.setMinutes(now.getMinutes() + utcOffset);
+
+            // Format the current date
+            const dateString = now.toISOString().split('T')[0]; // Only the date part
+
+            signalsOutput.innerHTML = `
+                <p>𒆜TRIPLE T TRADER 𒆜</p>
+                <p>⏰Timezone: UTC (+06:00)</p>
+                <p>📅Date: ${dateString} UTC+06:00</p>
+                <p>◻️AVOID IF OPPOSITE TREND, BACK 2 BACK 3 OPPOSITE CANDLE & PREVIOUS CANDLE DOJI OR GAPES</p>
+                <p><strong>SIGNALS:</strong></p>
+            `;
+            let signalTime = startTime;
+
+            const numSignals = Math.floor(Math.random() * (12 - 8 + 1) + 8);
+            for (let i = 0; i < numSignals; i++) {
+                const interval = Math.floor(Math.random() * (7 - 4 + 1) + 4);
+                signalTime = new Date(signalTime.getTime() + interval * 60000);
+
+                if (signalTime >= endTime) break;
+
+                const randomAsset = assets[Math.floor(Math.random() * assets.length)]; // Randomly pick an asset
+                const signal = `${signalTime.toISOString().substring(11, 16)} - ${randomAsset} - ${direction}`;
+                signalsOutput.innerHTML += `<p>${signal}</p>`;
+            }
+
+            document.getElementById("step-4").classList.remove("active");
             document.getElementById("output").classList.add("active");
         }
 
