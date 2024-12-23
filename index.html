@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>TTT Generator with API</title>
+    <title>Step-by-Step TTT Generator</title>
     <style>
-        /* Styling similar to the previous code */
         body {
             margin: 0;
             padding: 0;
@@ -17,6 +16,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            overflow: hidden;
         }
 
         .container {
@@ -27,7 +27,7 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
             text-align: center;
             width: 80%;
-            max-width: 500px;
+            max-width: 400px;
         }
 
         h1 {
@@ -44,7 +44,7 @@
             color: #ffebcd;
         }
 
-        input, select {
+        input {
             width: 100%;
             padding: 10px;
             margin: 10px 0 20px;
@@ -69,106 +69,105 @@
             background: #ffb700;
         }
 
-        .output {
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .footer-note {
             margin-top: 20px;
-            text-align: left;
-            color: #ffebcd;
             font-size: 14px;
+            color: #dcdcdc;
+            font-style: italic;
+        }
+
+        #output {
+            text-align: left;
+            font-size: 14px;
+            color: #ffebcd;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>TTT Generator with API</h1>
-        <label for="start_time">Start Time (HH:MM):</label>
-        <input type="time" id="start_time">
+        <h1>TTT Generator</h1>
 
-        <label for="end_time">End Time (HH:MM):</label>
-        <input type="time" id="end_time">
+        <!-- Step 1 -->
+        <div class="step active" id="step-1">
+            <label for="start_time">Enter Start Time (HH:MM):</label>
+            <input type="time" id="start_time">
+            <button onclick="generateSignals()">Generate Signals</button>
+        </div>
 
-        <label for="days">Days (Optional):</label>
-        <input type="number" id="days" placeholder="Default: 3">
-
-        <label for="pairs">Currency Pairs (Optional):</label>
-        <input type="text" id="pairs" placeholder="Default: BRLUSD_otc,USDPKR_otc...">
-
-        <label for="mode">Mode (Optional):</label>
-        <select id="mode">
-            <option value="normal">Normal</option>
-            <option value="blackout">Blackout</option>
-        </select>
-
-        <label for="min_percentage">Minimum Accuracy (Optional):</label>
-        <input type="number" id="min_percentage" placeholder="Default: 50">
-
-        <label for="filter">Filter (Optional):</label>
-        <select id="filter">
-            <option value="1">Human-based</option>
-            <option value="2">Future trend-based</option>
-        </select>
-
-        <label for="separate">Separate by Trend (Optional):</label>
-        <select id="separate">
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-        </select>
-
-        <button onclick="generateSignals()">Generate Signals</button>
-
-        <div id="output" class="output"></div>
+        <!-- Output -->
+        <div class="step" id="output">
+            <h3>Generated Signals</h3>
+            <div id="signalsOutput"></div>
+            <button onclick="restart()">Restart</button>
+        </div>
     </div>
 
     <script>
         async function generateSignals() {
             const start_time = document.getElementById("start_time").value;
-            const end_time = document.getElementById("end_time").value;
-            const days = document.getElementById("days").value || 3;
-            const pairs = document.getElementById("pairs").value || "BRLUSD_otc,USDPKR_otc,USDINR_otc";
-            const mode = document.getElementById("mode").value;
-            const min_percentage = document.getElementById("min_percentage").value || 50;
-            const filter = document.getElementById("filter").value;
-            const separate = document.getElementById("separate").value;
+            const end_time = document.getElementById("end_time")?.value;  // Optional, but can be used later if needed
 
-            if (!start_time || !end_time) {
-                alert("Start time and end time are required!");
+            if (!start_time) {
+                alert("Start time is required!");
                 return;
             }
 
-            const url = "https://alltradingapi.com/signal_list_gen/qx_signal.js";
+            const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+            const apiUrl = "https://alltradingapi.com/signal_list_gen/qx_signal.js";
+            const url = `${proxyUrl}${apiUrl}`;
             const params = new URLSearchParams({
                 start_time,
-                end_time,
-                days,
-                pairs,
-                mode,
-                min_percentage,
-                filter,
-                separate
+                end_time: end_time || "18:00",  // Default end time if not provided
+                days: 3,
+                pairs: "BRLUSD_otc,USDPKR_otc,USDINR_otc",
+                mode: "normal",
+                min_percentage: 50,
+                filter: 1,
+                separate: 1
             });
 
             try {
                 const response = await fetch(`${url}?${params}`);
-                if (!response.ok) {
-                    throw new Error(`Error: ${response.statusText}`);
-                }
                 const data = await response.json();
-                displaySignals(data);
+                console.log('API Response:', data);  // Log the entire response for debugging
+
+                if (data && data.signals && Array.isArray(data.signals) && data.signals.length > 0) {
+                    displaySignals(data.signals);
+                } else {
+                    document.getElementById("output").innerHTML = `<p>No signals generated.</p>`;
+                }
             } catch (error) {
+                console.error("Error fetching signals:", error.message);
                 document.getElementById("output").innerHTML = `<p style="color: red;">${error.message}</p>`;
             }
         }
 
-        function displaySignals(data) {
-            const output = document.getElementById("output");
-            output.innerHTML = "<h3>Generated Signals:</h3>";
+        function displaySignals(signals) {
+            const output = document.getElementById("signalsOutput");
+            output.innerHTML = "";
 
-            if (Array.isArray(data) && data.length > 0) {
-                data.forEach(signal => {
-                    output.innerHTML += `<p>${signal.time} - ${signal.pair} - ${signal.direction}</p>`;
-                });
-            } else {
-                output.innerHTML += `<p>No signals generated.</p>`;
-            }
+            signals.forEach(signal => {
+                // Assuming each signal has time, pair, and direction fields
+                const signalText = `${signal.time} - ${signal.pair} - ${signal.direction}`;
+                output.innerHTML += `<p>${signalText}</p>`;
+            });
+
+            document.getElementById("step-1").classList.remove("active");
+            document.getElementById("output").classList.add("active");
+        }
+
+        function restart() {
+            document.getElementById("output").classList.remove("active");
+            document.getElementById("step-1").classList.add("active");
+            document.querySelectorAll("input").forEach(input => input.value = "");
         }
     </script>
 </body>
