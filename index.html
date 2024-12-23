@@ -3,115 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OTC Checker</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>TTT Generator with API</title>
     <style>
+        /* Styling similar to the previous code */
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        label {
+            font-size: 16px;
+            margin-bottom: 10px;
+            display: block;
+            text-align: left;
+            color: #ffebcd;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        button {
+            background: #ffd700;
+            color: #1e3c72;
+            font-size: 18px;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #ffb700;
+        }
+
         .output {
             margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            background-color: #f9f9f9;
-        }
-        .green {
-            color: green;
+            text-align: left;
+            color: #ffebcd;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <h1>OTC Checker Tool</h1>
-    <label for="asset">Enter asset name (e.g., BRLUSD_otc):</label>
-    <input type="text" id="asset" placeholder="Enter asset name">
-    
-    <br><br>
-    <label for="days">Enter days max 10 (e.g., 10):</label>
-    <input type="text" id="days" placeholder="Enter days separated by commas">
-    
-    <br><br>
-    <button onclick="fetchSummary()">Get Summary</button>
+    <div class="container">
+        <h1>TTT Generator with API</h1>
+        <label for="start_time">Start Time (HH:MM):</label>
+        <input type="time" id="start_time">
 
-    <div id="output" class="output"></div>
+        <label for="end_time">End Time (HH:MM):</label>
+        <input type="time" id="end_time">
+
+        <label for="days">Days (Optional):</label>
+        <input type="number" id="days" placeholder="Default: 3">
+
+        <label for="pairs">Currency Pairs (Optional):</label>
+        <input type="text" id="pairs" placeholder="Default: BRLUSD_otc,USDPKR_otc...">
+
+        <label for="mode">Mode (Optional):</label>
+        <select id="mode">
+            <option value="normal">Normal</option>
+            <option value="blackout">Blackout</option>
+        </select>
+
+        <label for="min_percentage">Minimum Accuracy (Optional):</label>
+        <input type="number" id="min_percentage" placeholder="Default: 50">
+
+        <label for="filter">Filter (Optional):</label>
+        <select id="filter">
+            <option value="1">Human-based</option>
+            <option value="2">Future trend-based</option>
+        </select>
+
+        <label for="separate">Separate by Trend (Optional):</label>
+        <select id="separate">
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+        </select>
+
+        <button onclick="generateSignals()">Generate Signals</button>
+
+        <div id="output" class="output"></div>
+    </div>
 
     <script>
-        // Function to fetch the summary
-        async function fetchSummary() {
-            const asset = document.getElementById("asset").value.trim();
-            const daysInput = document.getElementById("days").value.trim();
+        async function generateSignals() {
+            const start_time = document.getElementById("start_time").value;
+            const end_time = document.getElementById("end_time").value;
+            const days = document.getElementById("days").value || 3;
+            const pairs = document.getElementById("pairs").value || "BRLUSD_otc,USDPKR_otc,USDINR_otc";
+            const mode = document.getElementById("mode").value;
+            const min_percentage = document.getElementById("min_percentage").value || 50;
+            const filter = document.getElementById("filter").value;
+            const separate = document.getElementById("separate").value;
 
-            // Validate the input for days
-            let days;
-            try {
-                days = daysInput.split(",").map(day => parseInt(day.trim(), 10));
-                if (days.some(day => isNaN(day))) throw new Error("Invalid days input");
-            } catch (error) {
-                alert("Invalid day input. Please enter valid numbers (e.g., 1,3,5,10).");
+            if (!start_time || !end_time) {
+                alert("Start time and end time are required!");
                 return;
             }
 
-            // Get current UTC time and adjust for UTC+6
-            const now = new Date();
-            const startTime = new Date(now.getTime() + 1 * 60 * 1000); // Start time: 1 minute ahead
-            const endTime = new Date(now.getTime() + 2 * 60 * 1000);   // End time: 2 minutes ahead
-            const start_time = `${startTime.getUTCHours()}:${String(startTime.getUTCMinutes()).padStart(2, "0")}`;
-            const end_time = `${endTime.getUTCHours()}:${String(endTime.getUTCMinutes()).padStart(2, "0")}`;
+            const url = "https://alltradingapi.com/signal_list_gen/qx_signal.js";
+            const params = new URLSearchParams({
+                start_time,
+                end_time,
+                days,
+                pairs,
+                mode,
+                min_percentage,
+                filter,
+                separate
+            });
 
-            // Show the calculated times
-            document.getElementById("output").innerHTML = `
-                <strong>Calculated Start Time (UTC+6):</strong> ${start_time} <br>
-                <strong>Calculated End Time (UTC+6):</strong> ${end_time} <br><br>
-            `;
-
-            // Base URL
-            const base_url = "https://alltradingapi.com/checker/otc_checker.ts";
-
-            // Loop through user-specified days and make requests
-            for (let day of days) {
-                try {
-                    const params = new URLSearchParams({
-                        pair: asset,
-                        start_time: start_time,
-                        end_time: end_time,
-                        day: day
-                    });
-                    const response = await fetch(`${base_url}?${params}`);
-                    const data = await response.json();
-
-                    const summary = data.summary || {};
-                    if (summary) {
-                        let outputHtml = `<h2>Summary for Day ${day}:</h2>`;
-                        for (let timePeriod in summary) {
-                            const metrics = summary[timePeriod];
-                            const callAccuracy = metrics.call_accuracy || 0;
-                            const putAccuracy = metrics.put_accuracy || 0;
-                            const flatAccuracy = metrics.flat_accuracy || 0;
-
-                            let finalDirection = "FLAT";
-                            let maxAccuracy = Math.max(callAccuracy, putAccuracy, flatAccuracy);
-                            if (maxAccuracy === callAccuracy) {
-                                finalDirection = `CALL 🔼`;
-                            } else if (maxAccuracy === putAccuracy) {
-                                finalDirection = `PUT 🔽`;
-                            }
-
-                            outputHtml += `
-                                <div class="green">
-                                    <strong>Time Period: ${timePeriod}</strong><br>
-                                    PUT ACCURACY: ${putAccuracy}%<br>
-                                    CALL ACCURACY: ${callAccuracy}%<br>
-                                    FLAT ACCURACY: ${flatAccuracy}%<br>
-                                    FINAL DIRECTION: ${finalDirection}<br><br>
-                                </div>
-                            `;
-                        }
-                        document.getElementById("output").innerHTML += outputHtml;
-                    } else {
-                        document.getElementById("output").innerHTML += `<p>No summary data available for Day ${day}.</p>`;
-                    }
-                } catch (error) {
-                    document.getElementById("output").innerHTML += `<p>Error fetching data for Day ${day}: ${error.message}</p>`;
+            try {
+                const response = await fetch(`${url}?${params}`);
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.statusText}`);
                 }
+                const data = await response.json();
+                displaySignals(data);
+            } catch (error) {
+                document.getElementById("output").innerHTML = `<p style="color: red;">${error.message}</p>`;
+            }
+        }
+
+        function displaySignals(data) {
+            const output = document.getElementById("output");
+            output.innerHTML = "<h3>Generated Signals:</h3>";
+
+            if (Array.isArray(data) && data.length > 0) {
+                data.forEach(signal => {
+                    output.innerHTML += `<p>${signal.time} - ${signal.pair} - ${signal.direction}</p>`;
+                });
+            } else {
+                output.innerHTML += `<p>No signals generated.</p>`;
             }
         }
     </script>
