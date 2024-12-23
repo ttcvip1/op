@@ -3,125 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TTT Signal Generator</title>
+    <title>OTC Checker</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
         }
-        h1 {
-            color: #4CAF50;
-        }
-        label {
-            font-weight: bold;
-        }
-        input, button {
-            margin: 10px 0;
-            padding: 10px;
-            width: 100%;
-            max-width: 400px;
-        }
-        #output {
+        .output {
             margin-top: 20px;
             padding: 10px;
             border: 1px solid #ccc;
             background-color: #f9f9f9;
-            display: none;
         }
-        .error {
-            color: red;
+        .green {
+            color: green;
         }
     </style>
 </head>
 <body>
-    <h1>TTT Signal Generator</h1>
-    <form id="auth-form">
-        <label for="ttt-id">TTT ID:</label>
-        <input type="email" id="ttt-id" placeholder="Enter TTT ID" required>
+    <h1>OTC Checker Tool</h1>
+    <label for="asset">Enter asset name (e.g., BRLUSD_otc):</label>
+    <input type="text" id="asset" placeholder="Enter asset name">
+    
+    <br><br>
+    <label for="days">Enter days max 10 (e.g., 10):</label>
+    <input type="text" id="days" placeholder="Enter days separated by commas">
+    
+    <br><br>
+    <button onclick="fetchSummary()">Get Summary</button>
 
-        <label for="password">Password:</label>
-        <input type="password" id="password" placeholder="Enter Password" required>
-
-        <button type="button" onclick="authenticate()">Authenticate</button>
-    </form>
-
-    <form id="signal-form" style="display:none;">
-        <label for="assets">Assets (comma-separated, e.g., USDBDT-OTC, USDEGP-OTC):</label>
-        <input type="text" id="assets" placeholder="Enter asset names">
-
-        <label for="start-time">Start Time (e.g., 09:00):</label>
-        <input type="time" id="start-time">
-
-        <label for="end-time">End Time (e.g., 18:00):</label>
-        <input type="time" id="end-time">
-
-        <label for="days">Number of Days (Default: 5):</label>
-        <input type="number" id="days" min="1" max="10" placeholder="Enter number of days (optional)">
-
-        <button type="button" onclick="fetchSignals()">Fetch Signals</button>
-    </form>
-
-    <div id="output"></div>
+    <div id="output" class="output"></div>
 
     <script>
-        const validTTTID = "triplettrader@gmail.com";
-        const validPassword = "@Triple_T_Trader";
-        const expiryDate = new Date("2070-12-10");
+        // Function to fetch the summary
+        async function fetchSummary() {
+            const asset = document.getElementById("asset").value.trim();
+            const daysInput = document.getElementById("days").value.trim();
 
-        function authenticate() {
-            const tttID = document.getElementById("ttt-id").value.trim();
-            const password = document.getElementById("password").value.trim();
-
-            if (tttID === validTTTID && password === validPassword) {
-                const today = new Date();
-                if (today <= expiryDate) {
-                    alert("YOUR ID APPROVED ✅");
-                    document.getElementById("auth-form").style.display = "none";
-                    document.getElementById("signal-form").style.display = "block";
-                } else {
-                    alert("ACCESS DENIED ❌\nThis TTT ID has expired. Please renew your subscription!");
-                }
-            } else {
-                alert("ACCESS DENIED ❌\nInvalid TTT ID or Password. Please try again!");
-            }
-        }
-
-        async function fetchSignals() {
-            const assets = document.getElementById("assets").value.split(",").map(a => a.trim());
-            const startTime = document.getElementById("start-time").value || "09:00";
-            const endTime = document.getElementById("end-time").value || "18:00";
-            const days = document.getElementById("days").value || 5;
-
-            const params = new URLSearchParams({
-                start_time: startTime,
-                end_time: endTime,
-                days: days,
-                pairs: assets.join(",") || "USDARS_otc",
-                mode: "normal",
-                min_percentage: "90",
-                filter: "q",
-                separate: "1"
-            });
-
-            const url = `https://alltradingapi.com/signal_list_gen/qx_signal.js?${params}`;
-
+            // Validate the input for days
+            let days;
             try {
-                console.log(`Fetching from URL: ${url}`);
-                const response = await fetch(url);
-
-                if (response.ok) {
-                    const data = await response.text();
-                    console.log("Response Data:", data);
-
-                    document.getElementById("output").style.display = "block";
-                    document.getElementById("output").textContent = data;
-                } else {
-                    throw new Error(`HTTP Error: ${response.status}`);
-                }
+                days = daysInput.split(",").map(day => parseInt(day.trim(), 10));
+                if (days.some(day => isNaN(day))) throw new Error("Invalid days input");
             } catch (error) {
-                console.error("Error while fetching signals:", error);
-                document.getElementById("output").style.display = "block";
-                document.getElementById("output").innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                alert("Invalid day input. Please enter valid numbers (e.g., 1,3,5,10).");
+                return;
+            }
+
+            // Get current UTC time and adjust for UTC+6
+            const now = new Date();
+            const startTime = new Date(now.getTime() + 1 * 60 * 1000); // Start time: 1 minute ahead
+            const endTime = new Date(now.getTime() + 2 * 60 * 1000);   // End time: 2 minutes ahead
+            const start_time = `${startTime.getUTCHours()}:${String(startTime.getUTCMinutes()).padStart(2, "0")}`;
+            const end_time = `${endTime.getUTCHours()}:${String(endTime.getUTCMinutes()).padStart(2, "0")}`;
+
+            // Show the calculated times
+            document.getElementById("output").innerHTML = `
+                <strong>Calculated Start Time (UTC+6):</strong> ${start_time} <br>
+                <strong>Calculated End Time (UTC+6):</strong> ${end_time} <br><br>
+            `;
+
+            // Base URL
+            const base_url = "https://alltradingapi.com/checker/otc_checker.ts";
+
+            // Loop through user-specified days and make requests
+            for (let day of days) {
+                try {
+                    const params = new URLSearchParams({
+                        pair: asset,
+                        start_time: start_time,
+                        end_time: end_time,
+                        day: day
+                    });
+                    const response = await fetch(`${base_url}?${params}`);
+                    const data = await response.json();
+
+                    const summary = data.summary || {};
+                    if (summary) {
+                        let outputHtml = `<h2>Summary for Day ${day}:</h2>`;
+                        for (let timePeriod in summary) {
+                            const metrics = summary[timePeriod];
+                            const callAccuracy = metrics.call_accuracy || 0;
+                            const putAccuracy = metrics.put_accuracy || 0;
+                            const flatAccuracy = metrics.flat_accuracy || 0;
+
+                            let finalDirection = "FLAT";
+                            let maxAccuracy = Math.max(callAccuracy, putAccuracy, flatAccuracy);
+                            if (maxAccuracy === callAccuracy) {
+                                finalDirection = `CALL 🔼`;
+                            } else if (maxAccuracy === putAccuracy) {
+                                finalDirection = `PUT 🔽`;
+                            }
+
+                            outputHtml += `
+                                <div class="green">
+                                    <strong>Time Period: ${timePeriod}</strong><br>
+                                    PUT ACCURACY: ${putAccuracy}%<br>
+                                    CALL ACCURACY: ${callAccuracy}%<br>
+                                    FLAT ACCURACY: ${flatAccuracy}%<br>
+                                    FINAL DIRECTION: ${finalDirection}<br><br>
+                                </div>
+                            `;
+                        }
+                        document.getElementById("output").innerHTML += outputHtml;
+                    } else {
+                        document.getElementById("output").innerHTML += `<p>No summary data available for Day ${day}.</p>`;
+                    }
+                } catch (error) {
+                    document.getElementById("output").innerHTML += `<p>Error fetching data for Day ${day}: ${error.message}</p>`;
+                }
             }
         }
     </script>
