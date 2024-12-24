@@ -3,232 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Step-by-Step TTT Generator</title>
+    <title>Signal Generator</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
             margin: 0;
-            padding: 0;
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-        }
-
-        .container {
-            background-color: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            padding: 20px;
             text-align: center;
+        }
+        .banner {
+            color: #d9534f;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: inline-block;
             width: 80%;
             max-width: 400px;
         }
-
-        h1 {
-            font-size: 28px;
-            margin-bottom: 20px;
-            color: #ffd700;
-        }
-
-        label {
+        input, button, select {
+            margin: 10px 0;
+            padding: 10px;
             font-size: 16px;
-            margin-bottom: 10px;
-            display: block;
-            text-align: left;
-            color: #ffebcd;
-        }
-
-        input {
             width: 100%;
-            padding: 10px;
-            margin: 10px 0 20px;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
         }
-
         button {
-            background: #ffd700;
-            color: #1e3c72;
-            font-size: 18px;
-            padding: 10px;
+            background-color: #5cb85c;
+            color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 5px;
             cursor: pointer;
-            font-weight: bold;
         }
-
         button:hover {
-            background: #ffb700;
+            background-color: #4cae4c;
         }
-
-        .step {
-            display: none;
-        }
-
-        .step.active {
-            display: block;
-        }
-
-        .footer-note {
+        .signals {
             margin-top: 20px;
-            font-size: 14px;
-            color: #dcdcdc;
-            font-style: italic;
+            text-align: left;
+            font-size: 16px;
+        }
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
+    <div class="banner">𒆜TRIPLE T TRADER 𒆜</div>
+
     <div class="container">
-        <h1>TTT GENARATOR</h1>
-
-        <!-- Password Step -->
-        <div class="step active" id="password-step">
-            <label for="password">Enter Password:</label>
-            <input type="password" id="password" placeholder="Password">
-            <button onclick="checkPassword()">Submit</button>
+        <!-- Step 1: Select Asset -->
+        <div id="step1">
+            <label for="asset">Select Asset:</label>
+            <select id="asset" required>
+                <option value="" disabled selected>Select Asset</option>
+                <option value="AUDCAD_otc">AUD/CAD-OTC</option>
+                <option value="AUDCHF_otc">AUD/CHF-OTC</option>
+                <option value="AUDJPY_otc">AUD/JPY-OTC</option>
+                <option value="AUDNZD_otc">AUD/NZD-OTC</option>
+                <option value="AUDUSD_otc">AUD/USD-OTC</option>
+                <option value="CADCHF_otc">CAD/CHF-OTC</option>
+                <option value="CADJPY_otc">CAD/JPY-OTC</option>
+                <option value="CHFJPY_otc">CHF/JPY-OTC</option>
+                <option value="EURAUD_otc">EUR/AUD-OTC</option>
+                <option value="EURCAD_otc">EUR/CAD-OTC</option>
+                <option value="EURCHF_otc">EUR/CHF-OTC</option>
+                <option value="EURGBP_otc">EUR/GBP-OTC</option>
+                <option value="EURJPY_otc">EUR/JPY-OTC</option>
+                <option value="EURNZD_otc">EUR/NZD-OTC</option>
+                <option value="EURSGD_otc">EUR/SGD-OTC</option>
+                <option value="EURUSD_otc">EUR/USD-OTC</option>
+                <option value="GBPAUD_otc">GBP/AUD-OTC</option>
+                <option value="GBPCAD_otc">GBP/CAD-OTC</option>
+                <option value="GBPCHF_otc">GBP/CHF-OTC</option>
+                <option value="GBPJPY_otc">GBP/JPY-OTC</option>
+                <option value="GBPNZD_otc">GBP/NZD-OTC</option>
+                <option value="GBPUSD_otc">GBP/USD-OTC</option>
+                <option value="NZDCAD_otc">NZD/CAD-OTC</option>
+                <option value="NZDCHF_otc">NZD/CHF-OTC</option>
+                <option value="NZDJPY_otc">NZD/JPY-OTC</option>
+                <option value="NZDUSD_otc">NZD/USD-OTC</option>
+                <option value="USDBDT_otc">USD/BDT-OTC</option>
+                <option value="USDCAD_otc">USD/CAD-OTC</option>
+                <option value="USDCHF_otc">USD/CHF-OTC</option>
+                <option value="USDCOP_otc">USD/COP-OTC</option>
+                <option value="USDDZD_otc">USD/DZD-OTC</option>
+                <option value="USDEGP_otc">USD/EGP-OTC</option>
+                <option value="USDIDR_otc">USD/IDR-OTC</option>
+                <option value="USDINR_otc">USD/INR-OTC</option>
+                <option value="USDJPY_otc">USD/JPY-OTC</option>
+                <option value="USDMXN_otc">USD/MXN-OTC</option>
+                <option value="USDNGN_otc">USD/NGN-OTC</option>
+                <option value="USDPHP_otc">USD/PHP-OTC</option>
+                <option value="USDPKR_otc">USD/PKR-OTC</option>
+                <option value="USDTRY_otc">USD/TRY-OTC</option>
+                <option value="USDZAR_otc">USD/ZAR-OTC</option>
+            </select>
+            <button onclick="goToStep(2)">Next</button>
         </div>
 
-        <!-- Step 1 -->
-        <div class="step" id="step-1">
-            <label for="assets">Enter Asset Names (e.g., USDBRL-OTC, USDINR-OTC, USDARS-OTC):</label>
-            <input type="text" id="assets" placeholder="Asset Names (comma separated)">
-            <button onclick="nextStep(1)">Next</button>
+        <!-- Step 2: Select Direction -->
+        <div id="step2" class="hidden">
+            <label for="direction">Enter direction (CALL/PUT):</label>
+            <select id="direction" required>
+                <option value="">Select Direction</option>
+                <option value="CALL">CALL</option>
+                <option value="PUT">PUT</option>
+            </select>
+            <button onclick="goToStep(3)">Next</button>
         </div>
 
-        <!-- Step 2 -->
-        <div class="step" id="step-2">
-            <label for="direction">Enter Trade Direction (CALL/PUT):</label>
-            <input type="text" id="direction" placeholder="CALL/PUT">
-            <button onclick="nextStep(2)">Next</button>
+        <!-- Step 3: Enter Start Time -->
+        <div id="step3" class="hidden">
+            <label for="start_time">Enter start time (HH:MM):</label>
+            <input type="time" id="start_time" required>
+            <button onclick="goToStep(4)">Next</button>
         </div>
 
-        <!-- Step 3 -->
-        <div class="step" id="step-3">
-            <label for="startTime">Enter Start Time (HH:MM):</label>
-            <input type="time" id="startTime">
-            <button onclick="nextStep(3)">Next</button>
-        </div>
-
-        <!-- Step 4 -->
-        <div class="step" id="step-4">
-            <label for="endTime">Enter End Time (HH:MM):</label>
-            <input type="time" id="endTime">
-            <button onclick="generate()">Generate Signals</button>
+        <!-- Step 4: Enter End Time -->
+        <div id="step4" class="hidden">
+            <label for="end_time">Enter end time (HH:MM):</label>
+            <input type="time" id="end_time" required>
+            <button onclick="generateSignals()">Generate Signals</button>
         </div>
 
         <!-- Output -->
-        <div class="step" id="output">
-            <h3>Generated Signals</h3>
-            <div id="signalsOutput" style="text-align: left; font-size: 14px; color: #ffebcd;"></div>
-            <button onclick="restart()">Restart</button>
-        </div>
+        <div class="signals hidden" id="signalOutput"></div>
     </div>
 
     <script>
-        let step = 1;
-        const correctPassword = "@Triple_T_Trader";
-
-        function checkPassword() {
-            const password = document.getElementById("password").value.trim();
-            if (password === correctPassword) {
-                document.getElementById("password-step").classList.remove("active");
-                document.getElementById("step-1").classList.add("active");
-            } else {
-                alert("Incorrect password. Please try again.");
-            }
+        // Function to navigate between steps
+        function goToStep(step) {
+            document.getElementById("step1").classList.add("hidden");
+            document.getElementById("step2").classList.add("hidden");
+            document.getElementById("step3").classList.add("hidden");
+            document.getElementById("step4").classList.add("hidden");
+            document.getElementById(`step${step}`).classList.remove("hidden");
         }
 
-        function nextStep(currentStep) {
-            const current = document.getElementById(`step-${currentStep}`);
-            const next = document.getElementById(`step-${currentStep + 1}`);
+        // Function to generate signals
+        function generateSignals() {
+            const asset = document.getElementById("asset").value;
+            const assetText = document.getElementById("asset").options[document.getElementById("asset").selectedIndex].text;
+            const direction = document.getElementById("direction").value;
+            const startTime = document.getElementById("start_time").value;
+            const endTime = document.getElementById("end_time").value;
 
-            if (!validateInput(currentStep)) return;
-
-            current.classList.remove("active");
-            next.classList.add("active");
-        }
-
-        function validateInput(step) {
-            if (step === 1) {
-                const assets = document.getElementById("assets").value.trim();
-                const assetArray = assets.split(',').map(asset => asset.trim());
-                if (assetArray.length !== 3 || assetArray.some(asset => !/^[A-Z]{3}[A-Z0-9-]{3,}-OTC$/.test(asset))) {
-                    alert("Enter exactly three valid asset names (e.g., USDBRL-OTC, USDINR-OTC, USDARS-OTC).");
-                    return false;
-                }
-            } else if (step === 2) {
-                const direction = document.getElementById("direction").value.trim().toUpperCase();
-                if (direction !== "CALL" && direction !== "PUT") {
-                    alert("Enter CALL or PUT as direction.");
-                    return false;
-                }
-            } else if (step === 3) {
-                if (!document.getElementById("startTime").value) {
-                    alert("Enter a valid start time.");
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        function generate() {
-            const assets = document.getElementById("assets").value.trim().split(',').map(asset => asset.trim());
-            const direction = document.getElementById("direction").value.trim().toUpperCase();
-            const startTime = new Date("1970-01-01T" + document.getElementById("startTime").value + "Z");
-            const endTime = new Date("1970-01-01T" + document.getElementById("endTime").value + "Z");
-
-            if (!document.getElementById("endTime").value || startTime >= endTime) {
-                alert("Enter a valid end time that is later than start time.");
+            if (!asset || !direction || !startTime || !endTime) {
+                alert("Please fill out all fields.");
                 return;
             }
 
-            const signalsOutput = document.getElementById("signalsOutput");
+            const start = new Date(`1970-01-01T${startTime}:00`);
+            const end = new Date(`1970-01-01T${endTime}:00`);
 
-            // Get the current date in UTC+06:00 timezone
-            const now = new Date();
-            const utcOffset = 6 * 60; // UTC+06:00
-            now.setMinutes(now.getMinutes() + utcOffset);
-
-            // Format the current date
-            const dateString = now.toISOString().split('T')[0]; // Only the date part
-
-            signalsOutput.innerHTML = `
-                <p>𒆜TRIPLE T TRADER 𒆜</p>
-                <p>⏰Timezone: UTC (+06:00)</p>
-                <p>📅Date: ${dateString} UTC+06:00</p>
-                <p>◻️AVOID IF OPPOSITE TREND, BACK 2 BACK 3 OPPOSITE CANDLE & PREVIOUS CANDLE DOJI OR GAPES</p>
-                <p><strong>SIGNALS:</strong></p>
-            `;
-            let signalTime = startTime;
-
-            const numSignals = Math.floor(Math.random() * (12 - 8 + 1) + 8);
-            for (let i = 0; i < numSignals; i++) {
-                const interval = Math.floor(Math.random() * (7 - 4 + 1) + 4);
-                signalTime = new Date(signalTime.getTime() + interval * 60000);
-
-                if (signalTime >= endTime) break;
-
-                const randomAsset = assets[Math.floor(Math.random() * assets.length)]; // Randomly pick an asset
-                const signal = `${signalTime.toISOString().substring(11, 16)} - ${randomAsset} - ${direction}`;
-                signalsOutput.innerHTML += `<p>${signal}</p>`;
+            if (start >= end) {
+                alert("End time must be later than start time.");
+                return;
             }
 
-            document.getElementById("step-4").classList.remove("active");
-            document.getElementById("output").classList.add("active");
-        }
+            const signals = [];
+            const totalMinutes = (end - start) / 60000;
+            const hours = Math.floor(totalMinutes / 60);
+            const numSignals = Math.floor(Math.random() * (12 - 8 + 1) + 8) * (hours + 1);
+            let currentTime = start;
 
-        function restart() {
-            document.getElementById("output").classList.remove("active");
-            document.getElementById("step-1").classList.add("active");
-            document.querySelectorAll("input").forEach(input => input.value = "");
+            for (let i = 0; i < numSignals; i++) {
+                const interval = Math.floor(Math.random() * (7 - 4 + 1) + 4);
+                currentTime = new Date(currentTime.getTime() + interval * 60000);
+                if (currentTime >= end) break;
+                const timeString = currentTime.toTimeString().slice(0, 5);
+                signals.push(`${timeString} - ${assetText} - ${direction}`);
+            }
+
+            const output = document.getElementById("signalOutput");
+            const date = new Date();
+            const timezone = `UTC (${Intl.DateTimeFormat().resolvedOptions().timeZone})`;
+            const dateString = date.toLocaleDateString("en-GB");
+
+            output.innerHTML = `
+                <h3>𒆜TRIPLE T TRADER 𒆜</h3>
+                <p>⏰Timezone: ${timezone}</p>
+                <p>📅Date: ${dateString}</p>
+                <p>◻️AVOID IF OPPOSITE TREND, BACK 2 BACK 3 OPPOSITE CANDLE & PREVIOUS CANDLE DOJI OR GAPES</p>
+                <h3>SIGNALS:</h3>
+                <ul>${signals.map(s => `<li>${s}</li>`).join("")}</ul>`;
+            output.classList.remove("hidden");
         }
     </script>
 </body>
