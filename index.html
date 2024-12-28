@@ -3,36 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Software Trial Ended</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f4f4f9;
-            color: #333;
-            padding: 50px;
-        }
-        .message {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        .link {
-            font-size: 20px;
-            color: #007BFF;
-            text-decoration: none;
-        }
-        .link:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <title>Signal Maker</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="message">
-        THE SOFTWARE TRIAL IS ENDED
-    </div>
-    <div>
-        BUY FROM: <a href="https://t.me/TTT_ADMIN_01" target="_blank" class="link">https://t.me/TTT_ADMIN_01</a>
-    </div>
+    <h1>Planalto Signal Maker</h1>
+    <form id="signal-form">
+        <label for="start-time">Start Time:</label>
+        <input type="time" id="start-time" required><br><br>
+
+        <label for="end-time">End Time:</label>
+        <input type="time" id="end-time" required><br><br>
+
+        <label for="days">Days:</label>
+        <input type="number" id="days" value="3"><br><br>
+
+        <label for="pairs">Currency Pairs (comma-separated):</label>
+        <input type="text" id="pairs" value="BRLUSD_otc,USDPKR_otc,USDINR_otc"><br><br>
+
+        <label for="mode">Mode:</label>
+        <select id="mode">
+            <option value="normal">Normal</option>
+            <option value="blackout">Blackout</option>
+        </select><br><br>
+
+        <label for="min-percentage">Min Percentage:</label>
+        <input type="number" id="min-percentage" value="50"><br><br>
+
+        <label for="filter">Filter:</label>
+        <select id="filter">
+            <option value="1">Human-based</option>
+            <option value="2">Future trend-based</option>
+        </select><br><br>
+
+        <label for="separate">Separate by Trend:</label>
+        <input type="number" id="separate" value="1"><br><br>
+
+        <button type="submit">Get Signals</button>
+    </form>
+
+    <h2>Signal Results:</h2>
+    <pre id="results"></pre>
+
+    <script src="script.js"></script>
 </body>
 </html>
